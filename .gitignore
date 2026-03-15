@@ -1,0 +1,26 @@
+# Virtual environment
+venv/
+
+# Archive (local only)
+archive/
+
+# Compressed/debug files
+*.zip
+*.tar.gz
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Pickle files (not portable)
+*.pkl
+
+# OS files
+.DS_Store
+.idea/
