@@ -6,15 +6,9 @@ Generates two figures:
 
 Figure 1 — fig_ffsi_rates_combined
     2x2 bar chart: FFSI rates across four biological datasets
-    (a) ALL/AML Microarray
-    (b) Methylation (Binary)
-    (c) Methylation (Multiclass)
-    (d) CSF scRNA-seq
 
 Figure 2 — fig_histogram_pair_vs_full_k6
     2-panel histogram: pair-greedy vs full-data greedy entropy gap at k=6
-    (a) BRCA miRNA-Seq
-    (b) Methylation (Binary)
 """
 
 import pandas as pd
@@ -52,13 +46,13 @@ plt.rcParams.update({
     'patch.linewidth': 0.8,
 })
 
-# Shared color palette — consistent across both figures
+# Shared color palette
 COLORS = {
-    'gene_expression':      '#1f77b4',
-    'methylation_binary':   '#ff7f0e',
+    'gene_expression':        '#1f77b4',
+    'methylation_binary':     '#ff7f0e',
     'methylation_multiclass': '#2ca02c',
-    'csf':                  '#d62728',
-    'mirna':                '#9467bd',   # BRCA miRNA-Seq
+    'csf':                    '#d62728',
+    'histogram':              '#9467bd',   # purple for both histogram panels
 }
 
 # =============================================================================
@@ -88,7 +82,6 @@ HISTOGRAM_DATASETS = [
         'path':       RESULTS_DIR / "greedy_pairs/greedy_pairs_vs_singles_mirna_pg1k_k6.csv",
         'label':      'BRCA miRNA-Seq',
         'panel':      '(a)',
-        'color':      COLORS['mirna'],
         'n_features': 1881,
         'n_sampled':  1000,
     },
@@ -96,13 +89,12 @@ HISTOGRAM_DATASETS = [
         'path':       RESULTS_DIR / "greedy_pairs/greedy_pairs_vs_singles_binary_pg1k_k6.csv",
         'label':      'Methylation (Binary)',
         'panel':      '(b)',
-        'color':      COLORS['mirna'],
         'n_features': 5000,
         'n_sampled':  1000,
     },
 ]
 
-N_BINS = 25  # histogram bins (symmetric around 0)
+N_BINS = 25
 
 
 # =============================================================================
@@ -217,13 +209,13 @@ def create_rates_figure(all_data: dict, save_path=None):
 
 
 # =============================================================================
-# FIGURE 2 — HISTOGRAM: PAIR-GREEDY VS FULL-DATA GREEDY
+# FIGURE 2 — HISTOGRAM: pg1k VS g-full
 # =============================================================================
 
 def load_gap(path: Path) -> np.ndarray:
     """
     gap = full_singles_cond_entropy - pairs_cond_entropy
-    Positive => pair-greedy on 1K subsample beats standard greedy on full dataset.
+    Positive => pg1k on 1K subsample beats g-full on full dataset.
     """
     df = pd.read_csv(path)
     df = df[df['trial'] != 'CONFIG'].copy()
@@ -234,10 +226,11 @@ def load_gap(path: Path) -> np.ndarray:
 
 def create_histogram_figure(save_path=None):
     """
-    2-panel histogram of H(Y|G_full(k)) - H(Y|G_pairs(k)) at k=6.
-    Solid bars: positive gap (pair-greedy outperform with better region than full greedy).
-    Hatched bars: negative gap (full greedy outperform with better region).
+    2-panel histogram of H(Y|g-full(k)) - H(Y|pg1k(k)) at k=6.
+    Solid bars: positive gap (pg1k outperforms g-full).
+    Hatched bars: negative gap (g-full outperforms pg1k).
     """
+    color = COLORS['histogram']
     fig, axes = plt.subplots(1, 2, figsize=(9.0, 4.2))
 
     for ax, d in zip(axes, HISTOGRAM_DATASETS):
@@ -248,7 +241,6 @@ def create_histogram_figure(save_path=None):
             )
 
         gap   = load_gap(d['path'])
-        color = d['color']
         n_pos = (gap > 0).sum()
         n_neg = (gap <= 0).sum()
         n     = len(gap)
@@ -257,8 +249,8 @@ def create_histogram_figure(save_path=None):
         abs_max = max(abs(gap.min()), abs(gap.max())) * 1.05
         bins    = np.linspace(-abs_max, abs_max, N_BINS + 1)
 
-        # Solid: pair-greedy outperform better; hatched: full greedy outperform better
-        ax.hist(gap[gap >  0], bins=bins, color=color, alpha=0.75,
+        # Solid: pg1k outperforms g-full; hatched: g-full outperforms pg1k
+        ax.hist(gap[gap > 0], bins=bins, color=color, alpha=0.75,
                 edgecolor='black', linewidth=0.6)
         ax.hist(gap[gap <= 0], bins=bins, color=color, alpha=0.25,
                 edgecolor='black', linewidth=0.6, hatch='///')
@@ -269,7 +261,7 @@ def create_histogram_figure(save_path=None):
                    linestyle='-', alpha=0.9)
 
         ax.set_xlabel(
-            r'$H(Y \mid G_{\rm full}(k)) - H(Y \mid G_{\rm pairs}(k))$  (nats)'
+            r'$H(Y \mid G_{\mathrm{g\text{-}full}}(k)) - H(Y \mid G_{\mathrm{pg1k}}(k))$  (nats)'
         )
         ax.set_ylabel('Number of trials')
         ax.set_title(f"{d['panel']} {d['label']},  $k = 6$",
@@ -280,10 +272,10 @@ def create_histogram_figure(save_path=None):
         legend_elements = [
             mpatches.Patch(facecolor=color, alpha=0.75, edgecolor='black',
                            linewidth=0.6,
-                           label=f'Pairs outperform full  ({n_pos}/{n})'),
+                           label=f'pg1k outperforms g-full  ({n_pos}/{n})'),
             mpatches.Patch(facecolor=color, alpha=0.25, edgecolor='black',
                            linewidth=0.6, hatch='///',
-                           label=f'Full outperform pairs  ({n_neg}/{n})'),
+                           label=f'g-full outperforms pg1k  ({n_neg}/{n})'),
             Line2D([0], [0], color=color, linewidth=1.4,
                    label=f'Mean = {gap.mean():.4f}'),
         ]
@@ -328,14 +320,14 @@ def main():
 
     # --- Figure 2: Histogram ---
     print("\n" + "=" * 50)
-    print("Figure 2 — Histogram: Pair-Greedy vs Full-Data Greedy")
+    print("Figure 2 — Histogram: pg1k vs g-full")
     print("=" * 50)
     print("\nData summary:")
     for d in HISTOGRAM_DATASETS:
         gap   = load_gap(d['path'])
         n_pos = (gap > 0).sum()
         print(f"  {d['label']}: mean={gap.mean():.4f}, "
-              f"std={gap.std():.4f}, pairs outperform full={n_pos}/{len(gap)}")
+              f"std={gap.std():.4f}, pg1k outperforms g-full={n_pos}/{len(gap)}")
 
     print("\nGenerating figure...")
     create_histogram_figure(

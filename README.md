@@ -10,7 +10,7 @@ Omer Ella Caplan, Guy Assa, and Zohar Yakhini
 
 ## Abstract
 
-Forward Feature Selection (FFS) is a greedy algorithm widely used in computational biology to identify predictive feature subsets from high-dimensional molecular data. We define a dataset as Forward Feature Selection Incompatible (FFSI) when FFS does not recover the globally optimal feature subset, and provide an explicit construction of a dataset where the greedy algorithm is guaranteed to fail. We then quantify FFSI prevalence empirically across five molecular biology datasets spanning microarray transcriptomics, DNA methylation, single-cell RNA sequencing, miRNA sequencing, and bulk RNA sequencing. FFSI rates vary by more than three orders of magnitude across datasets, from below 0.12% in microarray gene expression to 33–48% in DNA methylation.
+Forward Feature Selection (FFS) is a greedy algorithm widely used in computational biology to identify predictive feature subsets from high-dimensional molecular data. In a seminal 1977 paper Cover and Van Campenhout proved that greedy selection can fail to find the optimal subset for continuous Gaussian data. The occurrence of such failure in binary data, common in biological applications, has not been systematically studied. We define a dataset as Forward Feature Selection Incompatible (FFSI) when FFS does not recover the globally optimal feature subset, and provide an explicit construction of a dataset on which the greedy algorithm is guaranteed to fail. We then quantify FFSI prevalence empirically across five molecular biology datasets spanning microarray transcriptomics, DNA methylation, single-cell RNA sequencing, miRNA sequencing, and bulk RNA sequencing. FFSI rates vary by more than three orders of magnitude across datasets, from below 0.12% in microarray gene expression (72 instances, 3,959 features) to 33–48% in DNA methylation (233 instances, 5,000 features). Further investigating feature selection aspects, we introduce pair-greedy selection, which evaluates feature pairs rather than individual features. On the methylation data, pair-greedy selection of 6 features from a random sample of 1,000 features outperforms standard FFS on all 5,000 features in 78% of trials, yet provides no advantage under multiclass labels on the same data (2%). Our results provide a preliminary indication for what we can expect from greedy feature selection in molecular biology data.
 
 ---
 
@@ -130,9 +130,9 @@ FFSI rates across four classification tasks (R = random samples, k = selected fe
 ## Citation
 
 ```bibtex
-@article{caplan2026ffsi,
+@article{ellacaplan2026ffsi,
   title={How successful do we expect greedy feature selection to be in molecular biology data?},
-  author={Caplan, Omer Ella and Assa, Guy and Yakhini, Zohar},
+  author={Ella Caplan, Omer and Assa, Guy and Yakhini, Zohar},
   journal={Bioinformatics},
   year={2026}
 }
@@ -142,4 +142,4 @@ FFSI rates across four classification tasks (R = random samples, k = selected fe
 
 ## Contact
 
-Corresponding author: caplanomer@gmail.com
+Corresponding author: Omer Ella Caplan (caplanomer@gmail.com)
